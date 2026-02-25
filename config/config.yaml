@@ -1,0 +1,12 @@
+data:
+  raw_path: "data/raw/Smartphone_Usage_Productivity_Dataset_50000.csv"
+  interim_path: "data/interim"
+  processed_path: "data/processed"
+
+preprocessing:
+  target: "Work_Productivity_Score"
+  test_size: 0.2
+  random_state: 42
+  feature_engineering:
+    total_screen_time: true
+    productivity_per_hour: false   # avoid leakage
