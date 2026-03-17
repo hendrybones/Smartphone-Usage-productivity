@@ -3,7 +3,6 @@ from pathlib import Path
 import yaml
 import logging
 import sys
-
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, ExtraTreesRegressor
@@ -12,10 +11,6 @@ from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
 
-
-# ─────────────────────────────────────────────────────────────
-# FORCE logging to show in Jupyter / VS Code / scripts
-# ─────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s | %(levelname)s | %(message)s',
@@ -25,10 +20,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
-# -------------------------
-# Load configuration
-# -------------------------
 def load_config(config_path="config/config.yaml"):
     """Load YAML config."""
     logger.info(f"Loading config from → {config_path}")
@@ -37,10 +28,6 @@ def load_config(config_path="config/config.yaml"):
     logger.info("✅ Config loaded successfully")
     return config
 
-
-# -------------------------
-# Load dataset
-# -------------------------
 def load_data(config):
     """Load preprocessed features dataset."""
     data_path = Path(config['data']['processed_path']) / "features.parquet"
@@ -50,10 +37,6 @@ def load_data(config):
     logger.info(f"✅ Data loaded: {df.shape[0]:,} rows × {df.shape[1]} columns")
     return df
 
-
-# -------------------------
-# Prepare train/test data (FIXED - Bulletproof One-Hot Encoding)
-# -------------------------
 def prepare_data(df, config):
     """Split + Drop IDs + Bool→int + One-Hot Encode (drop_first)"""
     target = config["preprocessing"]["target"]
@@ -63,7 +46,6 @@ def prepare_data(df, config):
     X = df.drop(columns=[target])
     y = df[target]
 
-    # 1. Drop pure ID columns (User_ID, index, etc.)
     id_cols = [col for col in X.columns if 
                (X[col].nunique() == len(X)) or 
                any(word in col.lower() for word in ['id', 'user', 'index'])]
@@ -71,18 +53,13 @@ def prepare_data(df, config):
         logger.warning(f"🗑️  Dropping ID columns: {id_cols}")
         X = X.drop(columns=id_cols)
 
-    # 2. Convert boolean columns to 0/1
     bool_cols = X.select_dtypes(include=['bool']).columns.tolist()
     if bool_cols:
         X[bool_cols] = X[bool_cols].astype(int)
         logger.info(f"✅ Converted boolean columns to 0/1: {bool_cols}")
-
-    # 3. One-hot encode ALL categorical columns (object + category + string dtypes)
-    #    This catches 'Gender' ('Male'), 'OS', etc. even if dtype is not plain 'object'
     logger.info("🔥 Applying one-hot encoding (drop_first=True + dtype=int)")
     X = pd.get_dummies(X, drop_first=True, dtype=int)
-
-    # 4. Safety check - make sure NO strings left
+    
     non_numeric = X.select_dtypes(exclude=['number']).columns.tolist()
     if non_numeric:
         logger.error(f"❌ STILL have non-numeric columns: {non_numeric}")
@@ -99,9 +76,6 @@ def prepare_data(df, config):
     return X_train, X_test, y_train, y_test
 
 
-# -------------------------
-# Define models
-# -------------------------
 def get_models():
     """Return dictionary of regression models."""
     return {
@@ -116,10 +90,6 @@ def get_models():
         "SVR": SVR()
     }
 
-
-# -------------------------
-# Evaluate a single model
-# -------------------------
 def evaluate_model(model, X_train, y_train, X_test, y_test):
     """Fit model and calculate evaluation metrics."""
     model.fit(X_train, y_train)
@@ -132,10 +102,6 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
 
     return {"RMSE": round(rmse, 4), "MAE": round(mae, 4), "R2 Score": round(r2, 4)}
 
-
-# -------------------------
-# Compare all models
-# -------------------------
 def compare_models(X_train, y_train, X_test, y_test):
     """Train and evaluate all models, return sorted DataFrame of results."""
     models = get_models()
@@ -161,9 +127,6 @@ def compare_models(X_train, y_train, X_test, y_test):
     return results_df
 
 
-# =========================
-# RUN EVERYTHING
-# =========================
 if __name__ == "__main__":
     logger.info("🚀 Starting Smartphone Usage → Productivity Model Comparison")
 
