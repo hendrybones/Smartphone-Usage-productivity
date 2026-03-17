@@ -1,0 +1,10 @@
+Model,RMSE,MAE,R2 Score
+Decision Tree,0.0,0.0,1.0
+Extra Trees,0.0147,0.0078,1.0
+Random Forest,0.0013,0.0,1.0
+Gradient Boosting,0.2598,0.1915,0.9919
+SVR,0.7073,0.5122,0.9398
+Linear Regression,1.4313,1.1396,0.7533
+Ridge,1.4313,1.1396,0.7533
+ElasticNet,1.8492,1.5577,0.5883
+Lasso,2.1607,1.8343,0.4379
